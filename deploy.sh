@@ -43,15 +43,19 @@ exit_setup () {
 
 cloud_bucket_setup () {
   read -p "Please enter your Cloud Bucket name: " cloud_bucket_name
-  echo "~~~~~~~~ Creating Cloud Bucket ~~~~~~~~~~"
-  if gsutil mb gs://$cloud_bucket_name; then
-    echo "Bucket created."
-  else
-    read -p "Bucket creation failed. Try again? y/n: " exit_response
-    if [ $exit_response = "n" ]; then
-      exit_setup
+  if gsutil ls gs://$cloud_bucket_name -p project_id; then
+    echo "using exisiting bucket"
+  else 
+    echo "~~~~~~~~ Creating Cloud Bucket ~~~~~~~~~~"
+    if gsutil mb gs://$cloud_bucket_name; then
+      echo "Bucket created."
     else
-      cloud_bucket_setup 
+      read -p "Bucket creation failed. Try again? y/n: " exit_response
+      if [ $exit_response = "n" ]; then
+        exit_setup
+      else
+        cloud_bucket_setup 
+      fi
     fi
   fi
 }
