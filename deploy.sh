@@ -43,8 +43,8 @@ exit_setup () {
 
 cloud_bucket_setup () {
   read -p "Please enter your Cloud Bucket name: " cloud_bucket_name
-  if gsutil ls gs://$cloud_bucket_name -p project_id; then
-    echo "using exisiting bucket"
+  if gsutil ls gs://$cloud_bucket_name -p $project_id; then
+    echo "using existing bucket"
   else 
     echo "~~~~~~~~ Creating Cloud Bucket ~~~~~~~~~~"
     if gsutil mb gs://$cloud_bucket_name; then
