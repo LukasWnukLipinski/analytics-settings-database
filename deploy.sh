@@ -89,7 +89,7 @@ service_account_setup () {
   read -p "Please enter you desired service account name with no spaces.
 This service account will be used by your Cloud Function.
 The recommended name is 'ga-database' : " service_account_name
-service_account_id = gcloud iam service-accounts list --filter="email ~ ^$service_account_name" --format='value(email)')
+service_account_id = $(gcloud iam service-accounts list --filter="email ~ ^$service_account_name" --format='value(email)')
 if $service_account_id; then
   echo "using existing service account"
 else
