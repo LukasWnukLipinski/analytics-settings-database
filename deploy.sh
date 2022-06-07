@@ -24,6 +24,7 @@ cat <<END
 ***************************
 END
 read -p "Please enter your Google Cloud Project ID: " project_id
+read -p "Please enter the region for deployment: " deploy_region
 echo "~~~~~~~~ Enabling APIs ~~~~~~~~~~"
 gcloud services enable \
 cloudbuild.googleapis.com \
@@ -88,6 +89,10 @@ service_account_setup () {
   read -p "Please enter you desired service account name with no spaces.
 This service account will be used by your Cloud Function.
 The recommended name is 'ga-database' : " service_account_name
+service_account_id = gcloud iam service-accounts list --filter="email ~ ^$service_account_name" --format='value(email)')
+if service_account_id; then
+  echo "using existing service account"
+else
   echo "~~~~~~~~ Creating Service Account ~~~~~~~~~~"
   if create_service_account; then
     service_account_email="$service_account_name@$project_id.iam.gserviceaccount.com"
@@ -109,6 +114,7 @@ The recommended name is 'ga-database' : " service_account_name
       create_service_account
     fi
   fi
+fi
 }
 
 service_account_setup
@@ -123,6 +129,7 @@ create_cloud_function () {
   	--trigger-http \
   	--entry-point=ga_settings_download \
   	--set-env-vars=BUCKET_NAME=$cloud_bucket_name
+	--region=deploy_region
 }
 
 cloud_function_setup () {
@@ -147,11 +154,13 @@ function name is 'analytics_settings_downloader': " function_name
 cloud_function_setup
 
 echo "~~~~~~~~ Creating BigQuery Dataset ~~~~~~~~~~"
-bq mk -d $project_id:analytics_settings_database
+
+bq mk --location=EU -d $project_id:analytics_settings_database
 echo "~~~~~~~~ Creating BigQuery Tables ~~~~~~~~~~"
 cd schemas
 bq mk -t --time_partitioning_type=DAY \
 	--schema=./ua_account_summaries_schema.json \
+	--location=LOCATION \
 	$project_id:analytics_settings_database.ua_account_summaries
 bq mk -t --time_partitioning_type=DAY \
 	--schema=./ua_goals_schema.json \
@@ -224,6 +233,7 @@ create_cloud_scheduler () {
   	--oidc-service-account-email=$service_account_email \
     --oidc-token-audience=$function_uri \
     --project=$project_id
+    --region=deploy_region
 }
 
 cloud_scheduler_setup () {
