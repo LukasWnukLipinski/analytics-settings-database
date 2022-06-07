@@ -128,7 +128,7 @@ create_cloud_function () {
   	--timeout=540s \
   	--trigger-http \
   	--entry-point=ga_settings_download \
-  	--set-env-vars=BUCKET_NAME=$cloud_bucket_name
+  	--set-env-vars=BUCKET_NAME=$cloud_bucket_name \
 	--region=deploy_region
 }
 
